@@ -84,7 +84,17 @@ param containerRegistry_SkuName string = 'Basic'
 
 
 ////// リソース定義 //////
-// NSG 作成 (Default)
+// NSG 作成 
+module nsg './Modules/nsg.bicep' = {
+  name: 'nsg'
+  params: {
+    location: location
+    nsgVnet1public_Name: nsgVnet1public_Name
+    nsgVnet1private_Name: nsgVnet1private_Name
+  }
+}
+
+/*
 resource nsgVnet1Public 'Microsoft.Network/networkSecurityGroups@2024-03-01' = {
   name: nsgVnet1public_Name
   location: location
@@ -115,7 +125,7 @@ resource nsgVnet1Private 'Microsoft.Network/networkSecurityGroups@2024-03-01' = 
   properties:{
   }
 }
-
+*/
 
 // vNet1 作成
 resource vNet1 'Microsoft.Network/virtualNetworks@2024-03-01' = {
@@ -131,7 +141,7 @@ resource vNet1 'Microsoft.Network/virtualNetworks@2024-03-01' = {
         properties: {
           addressPrefix: vNet1_Subnet1_addressPrefix
           networkSecurityGroup: {
-            id: nsgVnet1Public.id
+            id: nsg.outputs.nsgVnet1PublicId
           }
         }
       }
@@ -140,7 +150,7 @@ resource vNet1 'Microsoft.Network/virtualNetworks@2024-03-01' = {
         properties: {
           addressPrefix: vNet1_Subnet2_addressPrefix
           networkSecurityGroup: {
-            id: nsgVnet1Private.id
+            id: nsg.outputs.nsgVnet1PrivateId
           }
         }
       }
@@ -229,6 +239,18 @@ resource vnetPeering2to1 'Microsoft.Network/virtualNetworks/virtualNetworkPeerin
 }
 
 // Private DNS Zones 作成
+module privateDnsZones './Modules/privateDnsZones.bicep' = {
+  name: 'privateDnsZones'
+  params: {
+    vNetLink_Files_Name: vNetLink_Files_Name
+    vNetLink_sql_Name: vNetLink_sql_Name
+    vNetLink_serviceBus_Name: vNetLink_serviceBus_Name
+    vNetLink_WebApp_Name: vNetLink_WebApp_Name
+    vNet1Id: vNet1.id
+  }
+}
+
+/*
 resource privateDnsZoneFiles 'Microsoft.Network/privateDnsZones@2024-06-01' = {
   name: 'privatelink.file.core.windows.net'
   location: 'global'
@@ -297,7 +319,7 @@ resource virtualNetworkLinksWebApp 'Microsoft.Network/privateDnsZones/virtualNet
     }
   }
 }
-
+*/
 
 // App Service 作成
 resource appServicePlan 'Microsoft.Web/serverfarms@2024-04-01' = {
@@ -420,11 +442,14 @@ resource privateDnsZoneGroupWebApp1 'Microsoft.Network/privateEndpoints/privateD
       {
         name: 'webApp1'
         properties: {
-          privateDnsZoneId: privateDnsZoneWebApp.id
+          privateDnsZoneId: privateDnsZones.outputs.privateDnsZoneWebAppId
         }
       }
     ]
   }
+  dependsOn: [
+    privateDnsZones
+  ]
 }
 
 resource privateDnsZoneGroupWebApp2 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2024-05-01' = {
@@ -435,7 +460,7 @@ resource privateDnsZoneGroupWebApp2 'Microsoft.Network/privateEndpoints/privateD
       {
         name: 'webApp2'
         properties: {
-          privateDnsZoneId: privateDnsZoneWebApp.id
+          privateDnsZoneId: privateDnsZones.outputs.privateDnsZoneWebAppId
         }
       }
     ]
@@ -449,7 +474,7 @@ resource privateDnsZoneGroupWebApp3 'Microsoft.Network/privateEndpoints/privateD
       {
         name: 'webApp3'
         properties: {
-          privateDnsZoneId: privateDnsZoneWebApp.id
+          privateDnsZoneId: privateDnsZones.outputs.privateDnsZoneWebAppId
         }
       }
     ]
@@ -699,7 +724,7 @@ resource privateDnsZoneGroupFiles 'Microsoft.Network/privateEndpoints/privateDns
       {
         name: 'files'
         properties: {
-          privateDnsZoneId: privateDnsZoneFiles.id
+          privateDnsZoneId: privateDnsZones.outputs.privateDnsZoneFilesId
         }
       }
     ]
@@ -752,7 +777,7 @@ resource privateDnsZoneGroupSqlServer 'Microsoft.Network/privateEndpoints/privat
       {
         name: 'sqlServer'
         properties: {
-          privateDnsZoneId: privateDnsZoneSql.id
+          privateDnsZoneId: privateDnsZones.outputs.privateDnsZoneSqlId
         }
       }
     ]
@@ -807,7 +832,7 @@ resource privateDnsZoneGroupServiceBus 'Microsoft.Network/privateEndpoints/priva
       {
         name: 'serviceBus'
         properties: {
-          privateDnsZoneId: privateDnsZoneServiceBus.id
+          privateDnsZoneId: privateDnsZones.outputs.privateDnsZoneServiceBusId
         }
       }
     ]
