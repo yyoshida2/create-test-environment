@@ -94,39 +94,6 @@ module nsg './Modules/nsg.bicep' = {
   }
 }
 
-/*
-resource nsgVnet1Public 'Microsoft.Network/networkSecurityGroups@2024-03-01' = {
-  name: nsgVnet1public_Name
-  location: location
-  properties: {
-    securityRules: [
-      {
-        name: 'AllowAppGatewayInbound'
-        properties: {
-          priority: 100
-          direction: 'Inbound'
-          access: 'Allow'
-          protocol: '*'
-          sourcePortRange: '*'
-          destinationPortRanges: [
-            '65200-65535'
-          ]
-          sourceAddressPrefix: '*'
-          destinationAddressPrefix: '*'
-        }
-      }
-    ]
-  }
-}
-
-resource nsgVnet1Private 'Microsoft.Network/networkSecurityGroups@2024-03-01' = {
-  name: nsgVnet1private_Name
-  location: location
-  properties:{
-  }
-}
-*/
-
 // vNet1 作成
 resource vNet1 'Microsoft.Network/virtualNetworks@2024-03-01' = {
   name: vNet1_Name
@@ -249,77 +216,6 @@ module privateDnsZones './Modules/privateDnsZones.bicep' = {
     vNet1Id: vNet1.id
   }
 }
-
-/*
-resource privateDnsZoneFiles 'Microsoft.Network/privateDnsZones@2024-06-01' = {
-  name: 'privatelink.file.core.windows.net'
-  location: 'global'
-}
-
-resource virtualNetworkLinksFiles 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2024-06-01' = {
-  name: vNetLink_Files_Name
-  location: 'global'
-  parent: privateDnsZoneFiles
-  properties: {
-    registrationEnabled: false
-    virtualNetwork: {
-      id: vNet1.id
-    }
-  }
-}
-
-
-resource privateDnsZoneSql 'Microsoft.Network/privateDnsZones@2024-06-01' = {
-  name: 'privatelink.database.windows.net'
-  location: 'global'
-}
-
-resource virtualNetworkLinksSql 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2024-06-01' = {
-  name: vNetLink_sql_Name
-  location: 'global'
-  parent: privateDnsZoneSql
-  properties: {
-    registrationEnabled: false
-    virtualNetwork: {
-      id: vNet1.id
-    }
-  }
-}
-
-resource privateDnsZoneServiceBus 'Microsoft.Network/privateDnsZones@2024-06-01' = {
-  name: 'privatelink.servicebus.windows.net'
-  location: 'global'
-}
-
-resource virtualNetworkLinksServiceBus 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2024-06-01' = {
-  name: vNetLink_serviceBus_Name
-  location: 'global'
-  parent: privateDnsZoneServiceBus
-  properties: {
-    registrationEnabled: false
-    virtualNetwork: {
-      id: vNet1.id
-    }
-  }
-}
-
-resource privateDnsZoneWebApp 'Microsoft.Network/privateDnsZones@2024-06-01' = {
-  name: 'privatelink.azurewebsites.net'
-  location: 'global'
-}
-
-resource virtualNetworkLinksWebApp 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2024-06-01' = {
-  name: vNetLink_WebApp_Name
-  location: 'global'
-  parent: privateDnsZoneWebApp
-  properties: {
-    registrationEnabled: false
-    virtualNetwork: {
-      id: vNet1.id
-    }
-  }
-}
-*/
 
 // App Service 作成
 resource appServicePlan 'Microsoft.Web/serverfarms@2024-04-01' = {
